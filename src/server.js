@@ -8,10 +8,13 @@ const server = http.createServer(app);
 
 // Phase 5: attach Socket.IO to `server` here
 // Phase 4: start the overdue sweep here
+const { startOverdueSweep } = require("./jobs/overdueSweep");
+let sweepJob;
 
 async function start() {
   try {
     await connectDB();
+    sweepJob = startOverdueSweep(); // only once the DB is up
     server.listen(config.port, () =>
       logger.info({ port: config.port }, "Server listening"),
     );
@@ -30,6 +33,7 @@ async function shutdown(signal, exitCode = 0) {
   // If cleanup hangs, force-exit after 10 seconds
   setTimeout(() => process.exit(1), 10000).unref();
 
+  sweepJob?.stop();
   server.close(async () => {
     // stop new connections, finish in-flight requests
     await disconnectDB();
