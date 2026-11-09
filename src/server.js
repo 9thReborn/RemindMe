@@ -4,11 +4,20 @@ const logger = require("./config/logger");
 const { connectDB, disconnectDB } = require("./config/db");
 const app = require("./app");
 
-const server = http.createServer(app);
-
 // Phase 5: attach Socket.IO to `server` here
+const { createSocketServer } = require("./sockets");
+const {
+  registerNotificationHandlers,
+} = require("./notifications/notificationService");
+const mailer = require("./notifications/mailer");
+
 // Phase 4: start the overdue sweep here
 const { startOverdueSweep } = require("./jobs/overdueSweep");
+
+
+const server = http.createServer(app);
+const { io, emitToUser } = createSocketServer(server);
+registerNotificationHandlers({ emitToUser, mailer });
 let sweepJob;
 
 async function start() {
@@ -34,7 +43,7 @@ async function shutdown(signal, exitCode = 0) {
   setTimeout(() => process.exit(1), 10000).unref();
 
   sweepJob?.stop();
-  server.close(async () => {
+  io.close(async () => {
     // stop new connections, finish in-flight requests
     await disconnectDB();
     logger.info("Shutdown complete");
