@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
 const pinoHttp = require("pino-http");
 const mongoose = require("mongoose");
+const config = require('./config');
 
 const logger = require("./config/logger");
 const notFound = require("./middleware/notFound");
@@ -34,7 +35,11 @@ app.use(
   }),
 );
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: { upgradeInsecureRequests: config.isProd ? [] : null },  // null removes the directive
+  },
+}));
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 

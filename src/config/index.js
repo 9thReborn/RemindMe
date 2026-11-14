@@ -27,6 +27,8 @@ module.exports = Object.freeze({
     port: Number(process.env.SMTP_PORT) || 587,
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
-    from: process.env.MAIL_FROM,
+    fromEmail: process.env.MAIL_FROM_EMAIL || 'no-reply@remindme.dev',
+    fromName: process.env.MAIL_FROM_NAME || 'RemindMe',
+    brevoApiKey: process.env.BREVO_API_KEY,
   }),
 });
